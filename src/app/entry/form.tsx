@@ -5,7 +5,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
+import { onlineManager, useMutation } from '@tanstack/react-query';
 import { useLogs } from '../../api/queries';
 import { EditLogData, NewLogData } from '../../api/mutations';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
@@ -77,13 +77,20 @@ export default function EntryFormScreen() {
 
   const imageUrl = existing?.imageUrl ?? p.imageUrl;
   const dateLabel = fmtDate(existing?.createdAt ?? new Date().toISOString(), 'D MMMM YYYY');
+  let didNavigateBack = false;
 
   const onSubmit = (v: FormValues) => {
-    const done = () => router.back();
+    const goBackOnce = () => {
+      if (didNavigateBack) return;
+      didNavigateBack = true;
+      router.back();
+    };
+    const offline = !isConnected || !onlineManager.isOnline();
+
     if (isEdit && existing) {
       editLog(
         { id: existing.id, ...v, imageUrl: existing.imageUrl, source: existing.source, refId: existing.refId, createdAt: existing.createdAt },
-        { onSuccess: done },
+        { onSuccess: goBackOnce },
       );
     } else {
       addLog(
@@ -94,12 +101,12 @@ export default function EntryFormScreen() {
           refId: p.refId,
           createdAt: new Date().toISOString(),
         },
-        { onSuccess: done },
+        { onSuccess: goBackOnce },
       );
     }
-    if (!isConnected) {
+    if (offline) {
       Alert.alert('Sin conexión', 'La entrada se guardará automáticamente cuando recuperes la conexión.');
-      done();
+      goBackOnce();
     }
   };
 

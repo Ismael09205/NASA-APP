@@ -7,18 +7,29 @@ import { categoryIcon } from '../constants/categories';
 import { fmtDate } from '../utils/dates';
 import { NasaColors, NasaRadius, NasaSpacing } from '../constants/nasaTheme';
 
-type Props = { item: LogEntry; onPress: (e: LogEntry) => void; featured?: boolean };
+type Props = {
+  item: LogEntry;
+  onPress: (e: LogEntry) => void;
+  featured?: boolean;
+  pendingStatus?: 'paused' | 'sending';
+};
 
-function LogEntryCardBase({ item, onPress, featured }: Props) {
+function LogEntryCardBase({ item, onPress, featured, pendingStatus }: Props) {
   const date = fmtDate(item.createdAt) ?? 'Sin fecha';
   const excerpt = item.note?.trim();
+  const pendingLabel = pendingStatus === 'paused' ? 'Pendiente de envío' : 'Enviando al servidor';
 
   return (
     <Pressable
-      onPress={() => onPress(item)}
-      style={({ pressed }) => [styles.card, featured && styles.featured, pressed && styles.pressed]}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.title}. ${date}. Abrir entrada`}
+      onPress={pendingStatus ? undefined : () => onPress(item)}
+      style={({ pressed }) => [
+        styles.card,
+        featured && styles.featured,
+        pendingStatus && styles.pending,
+        pressed && !pendingStatus && styles.pressed,
+      ]}
+      accessibilityRole={pendingStatus ? 'text' : 'button'}
+      accessibilityLabel={`${item.title}. ${date}.${pendingStatus ? ` ${pendingLabel}.` : ' Abrir entrada.'}`}
     >
       {item.imageUrl ? (
         <Image
@@ -36,6 +47,11 @@ function LogEntryCardBase({ item, onPress, featured }: Props) {
         </View>
         <Text style={featured ? styles.titleFeatured : styles.title} numberOfLines={2}>{item.title}</Text>
         {excerpt ? <Text style={styles.excerpt} numberOfLines={featured ? 3 : 2}>{excerpt}</Text> : null}
+        {pendingStatus && (
+          <Text style={[styles.pendingLabel, pendingStatus === 'sending' && styles.sendingLabel]}>
+            {pendingLabel}
+          </Text>
+        )}
         {featured && <Text style={styles.open}>Abrir entrada completa</Text>}
       </View>
     </Pressable>
@@ -54,6 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: NasaSpacing.sm,
   },
   featured: { borderColor: NasaColors.accentBlue },
+  pending: { borderColor: NasaColors.warning },
   pressed: { opacity: 0.85 },
   imageFeatured: { width: '100%', aspectRatio: 16 / 10, backgroundColor: NasaColors.surfaceElevated },
   imageThumb: { width: '100%', height: 120, backgroundColor: NasaColors.surfaceElevated },
@@ -64,4 +81,6 @@ const styles = StyleSheet.create({
   titleFeatured: { color: NasaColors.textPrimary, fontSize: 20, fontWeight: '700' },
   excerpt: { color: NasaColors.textSecondary, fontSize: 14, lineHeight: 20 },
   open: { color: NasaColors.accentBlue, fontSize: 14, fontWeight: '600' },
+  pendingLabel: { color: NasaColors.warning, fontSize: 13, fontWeight: '700' },
+  sendingLabel: { color: NasaColors.accentBlue },
 });

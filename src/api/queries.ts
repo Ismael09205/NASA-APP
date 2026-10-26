@@ -1,4 +1,5 @@
 // src/api/queries.ts
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { mockApi, nasaApi } from './client';
 import { queryKeys } from './queryKeys';
@@ -6,16 +7,33 @@ import { LogEntry } from '../types/log';
 import { ApodResponse, Asteroid, AsteroidFeed, NeoApiObject, NeoFeedResponse } from '../types/nasa';
 import { translateToSpanish } from './translate';
 import { normalizeFeed, normalizeNeo } from './neo';
+import { logTimestamp } from '../utils/logTimestamp';
 
 export const useLogs = () => {
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.log.lists(),
     queryFn: async (): Promise<LogEntry[]> => {
-      const { data } = await mockApi.get('/logs');
-      return data;
+      if (__DEV__) console.info(`[${logTimestamp()}] [Bitácora] Solicitando entradas al servidor.`);
+      const { data } = await mockApi.get<LogEntry[]>('/logs');
+      const uniqueEntries = [...new Map(data.map((entry) => [entry.id, entry])).values()];
+      if (__DEV__) {
+        const duplicateCount = data.length - uniqueEntries.length;
+        console.info(`[${logTimestamp()}] [Bitácora] Servidor devolvió ${data.length} entradas.`);
+        if (duplicateCount > 0) {
+          console.warn(`[${logTimestamp()}] [Bitácora] Se omitieron ${duplicateCount} entradas con ID duplicado.`);
+        }
+      }
+      return uniqueEntries;
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
+
+  useEffect(() => {
+    if (!__DEV__ || !query.data) return;
+    console.info(`[${logTimestamp()}] [Bitácora] Lista visible: ${query.data.length} entradas.`);
+  }, [query.data]);
+
+  return query;
 };
 
 export const useAsteroids = (start: string, end: string, enabled = true) => {

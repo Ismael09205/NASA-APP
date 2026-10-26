@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, FlatList, RefreshControl, TextInput, ScrollView, Keyboard } from 'react-native';
 import { router } from 'expo-router';
-import { Orbit, SearchX } from 'lucide-react-native';
+import { Info, Orbit, SearchX } from 'lucide-react-native';
 import { useAsteroids } from '../../api/queries';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { Asteroid } from '../../types/nasa';
@@ -126,9 +126,18 @@ export default function AsteroidsScreen() {
           <Chip label="Diámetro" selected={sort === 'diameter'} onPress={() => setSort('diameter')} />
         </ScrollView>
         {onlyHazardous && (
-          <Text style={styles.hint}>
-            PHA = «potencialmente peligroso» según la clasificación de NASA. No implica riesgo de impacto.
-          </Text>
+          <View style={styles.phaInfo}>
+            <View style={styles.phaInfoIcon}>
+              <Info size={18} color={NasaColors.accentBlue} />
+            </View>
+            <View style={styles.phaInfoText}>
+              <Text style={styles.phaInfoTitle}>¿Qué significa PHA?</Text>
+              <Text style={styles.phaInfoDescription}>
+                NASA clasifica así algunos asteroides por su tamaño y cercanía a la órbita terrestre. La etiqueta no significa que
+                exista riesgo de impacto.
+              </Text>
+            </View>
+          </View>
         )}
       </View>
     </View>
@@ -241,6 +250,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   hint: { color: NasaColors.textSecondary, fontSize: 12 },
+  phaInfo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: NasaSpacing.sm,
+    padding: NasaSpacing.md,
+    borderRadius: NasaRadius.card,
+    borderWidth: 1,
+    borderColor: NasaColors.border,
+    backgroundColor: NasaColors.surface,
+  },
+  phaInfoIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: NasaColors.surfaceElevated,
+  },
+  phaInfoText: { flex: 1, gap: 4 },
+  phaInfoTitle: { color: NasaColors.textPrimary, fontSize: 14, fontWeight: '700' },
+  phaInfoDescription: { color: NasaColors.textSecondary, fontSize: 12, lineHeight: 18 },
   errorText: { color: NasaColors.nasaRed, fontSize: 12 },
   chipScroll: { gap: NasaSpacing.sm, alignItems: 'center', paddingRight: NasaSpacing.md },
   sortLabel: { color: NasaColors.textSecondary, fontSize: 12, marginLeft: NasaSpacing.sm },
