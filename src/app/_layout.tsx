@@ -5,11 +5,13 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Network from 'expo-network';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
 // Importaciones locales
 import { queryClient } from '../api/queryClient';
 import '../api/mutations'; 
+import { NasaColors } from '../constants/nasaTheme';
 
 // 1. Configurar Online Manager para mutaciones offline con expo-network
 onlineManager.setEventListener((setOnline) => {
@@ -40,8 +42,19 @@ export default function RootLayout() {
         maxAge: MAX_AGE, 
       }}
     >
-      {/* Slot inyecta el (tabs)/_layout.tsx como renderizado principal */}
-      <Slot />
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: NasaColors.background },
+          headerShadowVisible: false,
+          headerTintColor: NasaColors.textPrimary,
+          headerTitleStyle: { color: NasaColors.textPrimary, fontWeight: '700' },
+          headerBackTitle: 'Atrás',
+          contentStyle: { backgroundColor: NasaColors.background },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </PersistQueryClientProvider>
   );
 }

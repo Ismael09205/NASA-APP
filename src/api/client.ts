@@ -3,6 +3,7 @@ import axios from 'axios';
 // Cliente para la NASA
 export const nasaApi = axios.create({
   baseURL: 'https://api.nasa.gov',
+  timeout: 15000,
 });
 
 nasaApi.interceptors.request.use((config) => {

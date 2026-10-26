@@ -2,11 +2,17 @@
 import { queryClient } from './queryClient'; 
 import { queryKeys } from './queryKeys';
 import { mockApi } from './client';
+import { LogSource } from '../types/log';
 
 // Definición estricta de tipos
 export type NewLogData = {
   title: string;
   note: string;
+  category?: string;
+  imageUrl?: string;
+  source?: LogSource;
+  refId?: string;
+  createdAt?: string;
 };
 
 export type EditLogData = NewLogData & {

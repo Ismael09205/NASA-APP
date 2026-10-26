@@ -1,25 +1,30 @@
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { NasaColors } from '../constants/nasaTheme';
 
 export function OfflineBanner() {
   const isConnected = useNetworkStatus();
+  const insets = useSafeAreaInsets();
 
   if (isConnected) return null;
 
   return (
-    <View style={styles.banner}>
+    <View style={[styles.banner, { paddingTop: insets.top + 8 }]}>
       <Text style={styles.text}>Sin conexión - Guardando localmente</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  banner: { 
-    backgroundColor: '#ff4444', 
-    padding: 8, 
-    paddingTop: Platform.OS === 'ios' ? 40 : 8, // Ajuste para el notch en iOS si es necesario
+  banner: {
+    backgroundColor: NasaColors.surfaceElevated,
+    borderBottomWidth: 1,
+    borderBottomColor: NasaColors.warning,
+    paddingBottom: 8,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    zIndex: 10
+    zIndex: 10,
   },
-  text: { color: 'white', fontWeight: 'bold', fontSize: 12 }
+  text: { color: NasaColors.warning, fontWeight: '600', fontSize: 12 },
 });
